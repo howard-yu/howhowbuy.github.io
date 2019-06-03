@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>howhowmi</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+   <div id="app">
+        <div class="ui small breadcrumb">
+            <div class="label label-default">新增商品</div>
+        </div>
+        <div class="ui container main">
+            <form class="ui form" id="Add">
+                <div class="field">
+                    <h4 class="ui header">訂購姓名</h4>
+                    <input class="form-control" id="Name" type="text" name="Name" placeholder="輸入姓名"  v-model="newModel.Name">
+                </div>
+                <div class="field">
+                    <h4 class="ui header">訂購電話</h4>
+                    <input class="form-control" id="Tel" type="text" name="Tel" placeholder="輸入電話" v-model="newModel.Tel">
+                </div>
+                <div class="field">
+                    <h4 class="ui header">訂購地址(限雙北)</h4>
+                    <input class="form-control" id="Address" type="text" name="Address" placeholder="輸入地址" v-model="newModel.Address">
+                </div>
+            </form>
+            <h3 class="ui header">商品內容設定</h3>
+            <table class="ui celled table" id="proEditTable">
+                <thead>
+                    <tr>
+                        <th class="center aligned">公/母</th>
+                        <th class="center aligned">數量</th>
+                        <th class="center aligned">切/不切</th>
+                        <th class="center aligned">要內臟/不要內臟</th>
+                        <th class="center aligned">
+                            <button type="button" class="btn btn-primary" @click="createSpec">+</button>
+                        </th>
+                    </tr>
+                </thead>
+                <template>
+                    <tbody>
+                        <tr v-for="(item,index) in orderlist">
+                            <td class="center aligned">
+                                <div class="ui input">
+                                    <select v-model="item.Sex">
+                                        <option v-for="option in optionsSex" v-bind:value="option.value">
+                                            {{ option.text }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </td>
+                            <td class="center aligned">
+                                <div class="ui input">
+                                    <input type="text" placeholder="ex 1..." v-model="item.Qty">
+                                </div>
+                            </td>
+                            <td class="center aligned">
+                                <div class="ui input">
+                                    <select v-model="item.IsCut">
+                                        <option v-for="option in optionsCut" v-bind:value="option.value">
+                                            {{ option.text }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </td>
+                            <td class="center aligned">
+                                <div class="ui input">
+                                    <select v-model="item.IsInternalOrgans">
+                                        <option v-for="option in optionsInternalOrgans" v-bind:value="option.value">
+                                            {{ option.text }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </td>
+                            <td class="collapsing center aligned">
+                                <button type="button" class="btn btn-danger" @click="deleteSpec(index)">-</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </template>
+            </table>
+            <div id="fixedFunction">
+                <div class="ui middle aligned grid">
+                    <button type="button" class="btn btn-success" @click="createProduct">Success</button>
+                </div>
+            </div>
+        </div>
+   </div> 
+</body>
+<script src="js/vue.min.js"></script>
+<script src="js/vue-resource.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: { 
+            postUrl : 'http://localhost:49826/api/GCP/GetGcpService',
+            newModel: {
+                Name: '',
+                Tel: '',
+                Address: '',
+                orders:[]
+            },
+
+            orderlist:[],
+
+            order: {
+                Sex : "",
+			    Qty : "",
+			    IsCut: "",
+			    IsInternalOrgans : ""
+            },
+
+            optionsSex: [
+                { text: '公', value: '公' },
+                { text: '母', value: '母' },
+            ],
+
+            optionsCut: [
+                { text: '切', value: 'Y' },
+                { text: '不切', value: 'N' },
+            ],
+            optionsInternalOrgans: [
+                { text: '要內臟', value: 'Y' },
+                { text: '不要內臟', value: 'N' },
+            ]
+        },
+        mounted() {
+            this.createSpec();
+        },
+        methods: {
+            createSpec: function () {
+                this.orderlist.push(this.order);
+                this.order = { Sex: '', Qty: '', IsCut: '', IsInternalOrgans: ''}
+            },
+            deleteSpec: function (index) {
+                this.orderlist.splice(index, 1);
+            },
+            createProduct: function () {
+                var vm = this;
+                vm.newModel.orders = vm.orderlist;
+
+                this.$http.post(this.postUrl, vm.newModel, {emulateJSON: true})
+                .then(response => {
+                    alert('OK');
+                }, response => {
+                    alert('訂購成功');
+                });
+            }
+        }
+    })
+</script>
+</html>
